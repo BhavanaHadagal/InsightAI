@@ -15,7 +15,7 @@ const AiChatPanel = ({ datasetId, datasetName }) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [configWarning, setConfigWarning] = useState(null);
-  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   // Fetch chat history for this dataset
   const fetchHistory = async () => {
@@ -46,7 +46,10 @@ const AiChatPanel = ({ datasetId, datasetName }) => {
   }, [datasetId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll the internal chat messages container, never the outer window or dashboard
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages, loading]);
 
   const handleSend = async (questionText) => {
@@ -139,7 +142,7 @@ const AiChatPanel = ({ datasetId, datasetName }) => {
       )}
 
       {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-4">
             <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mb-3">
@@ -216,7 +219,6 @@ const AiChatPanel = ({ datasetId, datasetName }) => {
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input bar */}
