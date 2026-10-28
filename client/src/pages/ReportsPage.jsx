@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import { useDataset } from '../context/DatasetContext';
-import { FileText, Download, Printer, FileSpreadsheet, CheckCircle2, Bot, Sparkles } from 'lucide-react';
+import { FileText, Download, Printer, FileSpreadsheet, CheckCircle2, Bot, Sparkles, Loader2 } from 'lucide-react';
+import api from '../services/api';
 
 const ReportsPage = () => {
   const { selectedDataset } = useDataset();
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [downloadingCsv, setDownloadingCsv] = useState(false);
 
   if (!selectedDataset) {
     return (
@@ -27,6 +30,56 @@ const ReportsPage = () => {
     window.print();
   };
 
+  const handleDownloadPdf = async () => {
+    if (!selectedDataset?._id || downloadingPdf) return;
+    setDownloadingPdf(true);
+    try {
+      const res = await api.get(`/datasets/${selectedDataset._id}/export/pdf`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const cleanName = (selectedDataset.name || 'InsightAI').replace(/[^a-zA-Z0-9_-]/g, '_');
+      link.setAttribute('download', `${cleanName}-report.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download PDF:', err);
+      alert('Failed to generate PDF report. Please try again.');
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
+  const handleDownloadCsv = async () => {
+    if (!selectedDataset?._id || downloadingCsv) return;
+    setDownloadingCsv(true);
+    try {
+      const res = await api.get(`/datasets/${selectedDataset._id}/export/csv`, {
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const cleanName = (selectedDataset.name || 'InsightAI').replace(/[^a-zA-Z0-9_-]/g, '_');
+      link.setAttribute('download', `${cleanName}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to download CSV:', err);
+      alert('Failed to download CSV. Please try again.');
+    } finally {
+      setDownloadingCsv(false);
+    }
+  };
+
   return (
     <Layout title="Reports & Exports">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -40,24 +93,31 @@ const ReportsPage = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <a
-              href={`/api/datasets/${selectedDataset._id}/export/csv`}
-              download
-              className="flex items-center px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors shadow-sm"
+            <button
+              onClick={handleDownloadCsv}
+              disabled={downloadingCsv}
+              className="flex items-center px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 disabled:opacity-60 border border-slate-200 rounded-lg transition-colors shadow-sm"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 mr-2 text-emerald-600" />
-              Download CSV
-            </a>
+              {downloadingCsv ? (
+                <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin text-emerald-600" />
+              ) : (
+                <FileSpreadsheet className="w-3.5 h-3.5 mr-2 text-emerald-600" />
+              )}
+              {downloadingCsv ? 'Downloading CSV...' : 'Download CSV'}
+            </button>
 
-            <a
-              href={`/api/datasets/${selectedDataset._id}/export/pdf`}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-colors"
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              className="flex items-center px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-60 rounded-lg shadow-sm transition-colors"
             >
-              <Download className="w-3.5 h-3.5 mr-2" />
-              Generate PDF Report
-            </a>
+              {downloadingPdf ? (
+                <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5 mr-2" />
+              )}
+              {downloadingPdf ? 'Generating PDF...' : 'Generate PDF Report'}
+            </button>
 
             <button
               onClick={handlePrint}
