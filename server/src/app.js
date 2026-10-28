@@ -29,10 +29,17 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or same-origin)
       if (!origin) return callback(null, true);
+      const allowedOrigins = [
+        env.CLIENT_URL,
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'http://127.0.0.1:5173',
+      ].filter(Boolean);
       if (
-        origin === env.CLIENT_URL ||
+        allowedOrigins.includes(origin) ||
         origin.startsWith('http://localhost:') ||
-        origin.startsWith('http://127.0.0.1:')
+        origin.startsWith('http://127.0.0.1:') ||
+        origin.endsWith('.vercel.app')
       ) {
         return callback(null, true);
       }
