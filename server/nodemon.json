@@ -1,0 +1,7 @@
+{
+  "watch": ["src"],
+  "ext": "js,json",
+  "delay": 1000,
+  "ignore": ["node_modules", "*.log", "test-*.js"]
+}
+
