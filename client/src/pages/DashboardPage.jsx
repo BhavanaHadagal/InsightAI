@@ -247,11 +247,11 @@ const DashboardPage = () => {
         )}
 
         {/* Tab Controls */}
-        <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-2 gap-3">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 overflow-x-auto pb-1 sm:pb-0">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-3 sm:px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                 activeTab === 'overview'
                   ? 'bg-brand-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -261,7 +261,7 @@ const DashboardPage = () => {
             </button>
             <button
               onClick={() => setActiveTab('records')}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-3 sm:px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                 activeTab === 'records'
                   ? 'bg-brand-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -271,7 +271,7 @@ const DashboardPage = () => {
             </button>
             <button
               onClick={() => setActiveTab('chat')}
-              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-3 sm:px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                 activeTab === 'chat'
                   ? 'bg-brand-600 text-white shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -281,19 +281,19 @@ const DashboardPage = () => {
             </button>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 shrink-0">
             <button
               onClick={() => navigate('/insights')}
-              className="flex items-center text-xs font-medium text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg border border-brand-200 transition-colors"
+              className="flex items-center text-xs font-medium text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 px-2.5 sm:px-3 py-1.5 rounded-lg border border-brand-200 transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+              <Sparkles className="w-3.5 h-3.5 mr-1.5 shrink-0" />
               Full Insights
             </button>
             <button
               onClick={() => navigate('/reports')}
-              className="flex items-center text-xs font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 transition-colors"
+              className="flex items-center text-xs font-medium text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-200 transition-colors"
             >
-              <FileText className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
+              <FileText className="w-3.5 h-3.5 mr-1.5 text-slate-500 shrink-0" />
               Export
             </button>
           </div>

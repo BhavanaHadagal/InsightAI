@@ -38,7 +38,9 @@ const KpiCard = ({ title, value, subtitle, icon: Icon, badge, color = 'blue' }) 
       </div>
 
       <div className="mt-3">
-        <div className="text-2xl font-bold text-slate-900 tracking-tight">{value}</div>
+        <div className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight truncate" title={String(value)}>
+          {value}
+        </div>
         <div className="flex items-center justify-between mt-2">
           {subtitle && <span className="text-xs text-slate-500">{subtitle}</span>}
           {badge && (

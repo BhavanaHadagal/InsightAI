@@ -116,7 +116,7 @@ const AiChatPanel = ({ datasetId, datasetName }) => {
           </div>
           <div>
             <h2 className="text-sm font-bold text-slate-800">InsightAI Assistant</h2>
-            <p className="text-[11px] text-slate-500 truncate max-w-[240px]">
+            <p className="text-[11px] text-slate-500 truncate max-w-[160px] xs:max-w-[220px] sm:max-w-xs">
               Active: {datasetName || 'No dataset selected'}
             </p>
           </div>

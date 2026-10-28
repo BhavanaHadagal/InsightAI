@@ -88,16 +88,16 @@ const DataTable = ({ datasetId }) => {
           </span>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
           {/* Search Input */}
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-initial w-full sm:w-64">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search table records..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-brand-500 w-48 sm:w-64"
+              className="pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-brand-500 w-full"
             />
           </div>
 
@@ -108,7 +108,7 @@ const DataTable = ({ datasetId }) => {
               setLimit(Number(e.target.value));
               setPage(1);
             }}
-            className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-700 outline-none"
+            className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 outline-none shrink-0"
           >
             <option value={10}>10 rows</option>
             <option value={15}>15 rows</option>
@@ -230,8 +230,8 @@ const DataTable = ({ datasetId }) => {
       </div>
 
       {/* Pagination Controls */}
-      <div className="p-3 border-t border-slate-200/80 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
-        <div>
+      <div className="p-3 border-t border-slate-200/80 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+        <div className="text-center sm:text-left">
           Showing <span className="font-semibold text-slate-700">{rows.length > 0 ? (page - 1) * limit + 1 : 0}</span> to{' '}
           <span className="font-semibold text-slate-700">
             {Math.min(page * limit, data.totalRows)}

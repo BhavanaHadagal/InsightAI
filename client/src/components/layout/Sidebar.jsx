@@ -10,6 +10,7 @@ import {
   LogOut,
   BarChart3,
   User as UserIcon,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -22,15 +23,20 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ mobileOpen = false, setMobileOpen = () => {} }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 border-r border-slate-800 select-none">
+  const handleNavClick = (href) => {
+    navigate(href);
+    setMobileOpen(false);
+  };
+
+  const sidebarContent = (
+    <>
       {/* Brand Logo & Name */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800/80 bg-slate-950/40">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
+      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800/80 bg-slate-950/40">
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => handleNavClick('/dashboard')}>
           <div className="w-9 h-9 rounded-lg bg-brand-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
             <BarChart3 className="w-5 h-5" />
           </div>
@@ -39,6 +45,15 @@ const Sidebar = () => {
             <span className="block text-[10px] text-slate-400 font-medium uppercase tracking-wider">Excel Analytics</span>
           </div>
         </div>
+
+        {/* Mobile close button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          title="Close Navigation Menu"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Nav links */}
@@ -52,6 +67,7 @@ const Sidebar = () => {
             <NavLink
               key={item.name}
               to={item.href}
+              onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
                 `flex items-center px-3.5 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                   isActive
@@ -88,7 +104,10 @@ const Sidebar = () => {
             </div>
           </div>
           <button
-            onClick={logout}
+            onClick={() => {
+              setMobileOpen(false);
+              logout();
+            }}
             title="Sign out"
             className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-md transition-colors"
           >
@@ -96,9 +115,33 @@ const Sidebar = () => {
           </button>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar (visible on md screens and up) */}
+      <aside className="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col shrink-0 border-r border-slate-800 select-none">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Drawer (visible on < md screens when opened) */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-950/75 backdrop-blur-sm transition-opacity"
+            onClick={() => setMobileOpen(false)}
+          />
+
+          {/* Drawer container */}
+          <aside className="relative w-72 max-w-[85vw] bg-slate-900 text-slate-300 flex flex-col z-10 shadow-2xl border-r border-slate-800 animate-in slide-in-from-left duration-200">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 };
 
 export default Sidebar;
-
