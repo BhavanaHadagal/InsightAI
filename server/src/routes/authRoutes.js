@@ -11,6 +11,7 @@ const {
 } = require('../controllers/authController');
 const { authLimiter } = require('../middleware/rateLimiter');
 const { validate } = require('../middleware/validate');
+const { createAuthToken } = require('../utils/token');
 const env = require('../config/env');
 
 const router = express.Router();
@@ -71,26 +72,30 @@ router.get('/google', (req, res, next) => {
 router.get(
   '/google/callback',
   (req, res, next) => {
+    const clientBase = (env.CLIENT_URL || 'https://insight-ai-pi-three.vercel.app').replace(/\/$/, '');
     if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
-      return res.redirect(`${env.CLIENT_URL}/login?error=oauth_not_configured`);
+      return res.redirect(`${clientBase}/login?error=oauth_not_configured`);
     }
     passport.authenticate('google', {
-      failureRedirect: `${env.CLIENT_URL}/login?error=oauth_failed`,
+      failureRedirect: `${clientBase}/login?error=oauth_failed`,
       session: true,
     })(req, res, next);
   },
   (req, res) => {
+    const userId = req.user._id || req.user.id;
+    const token = createAuthToken(userId);
+    const clientBase = (env.CLIENT_URL || 'https://insight-ai-pi-three.vercel.app').replace(/\/$/, '');
+
     // Regenerate session upon OAuth success for security
     req.session.regenerate((err) => {
       if (err) {
         console.error('Session regeneration error after OAuth:', err);
-        return res.redirect(`${env.CLIENT_URL}/login?error=session_error`);
+        return res.redirect(`${clientBase}/dashboard?token=${token}`);
       }
-      const userId = req.user._id || req.user.id;
       req.session.passport = { user: userId };
       req.session.save(() => {
-        // Successful authentication, redirect to frontend dashboard
-        res.redirect(`${env.CLIENT_URL}/dashboard`);
+        // Successful authentication, redirect with token for cross-domain support
+        res.redirect(`${clientBase}/dashboard?token=${token}`);
       });
     });
   }

@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const env = require('../config/env');
 const { sendPasswordResetEmail } = require('../services/emailService');
 const { findUserByEmail, createUser, findUserById } = require('../services/dataStorage');
+const { createAuthToken } = require('../utils/token');
 
 // Registration
 const register = async (req, res, next) => {
@@ -58,10 +59,12 @@ const register = async (req, res, next) => {
         req.session.passport = { user: user._id || user.id };
         req.session.save((saveErr) => {
           if (saveErr) return next(saveErr);
+          const token = createAuthToken(user._id || user.id);
           return res.status(201).json({
             success: true,
             message: 'Registration successful.',
             user: user.toJSON ? user.toJSON() : user,
+            token,
           });
         });
       });
@@ -118,10 +121,12 @@ const login = async (req, res, next) => {
         req.session.passport = { user: user._id || user.id };
         req.session.save((saveErr) => {
           if (saveErr) return next(saveErr);
+          const token = createAuthToken(user._id || user.id);
           return res.status(200).json({
             success: true,
             message: 'Login successful.',
             user: user.toJSON ? user.toJSON() : user,
+            token,
           });
         });
       });

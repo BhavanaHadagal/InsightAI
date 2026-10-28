@@ -9,6 +9,17 @@ export const AuthProvider = ({ children }) => {
 
   const fetchCurrentUser = async () => {
     try {
+      // Check if URL has ?token=... from OAuth redirect
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('token');
+      if (urlToken) {
+        localStorage.setItem('insightai_token', urlToken);
+        urlParams.delete('token');
+        const cleanSearch = urlParams.toString();
+        const newUrl = window.location.pathname + (cleanSearch ? `?${cleanSearch}` : '');
+        window.history.replaceState({}, document.title, newUrl);
+      }
+
       const res = await api.get('/auth/me');
       if (res.data.success && res.data.user) {
         setUser(res.data.user);
@@ -29,6 +40,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
     if (res.data.success && res.data.user) {
+      if (res.data.token) {
+        localStorage.setItem('insightai_token', res.data.token);
+      }
       setUser(res.data.user);
     }
     return res.data;
@@ -37,6 +51,9 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password, confirmPassword) => {
     const res = await api.post('/auth/register', { name, email, password, confirmPassword });
     if (res.data.success && res.data.user) {
+      if (res.data.token) {
+        localStorage.setItem('insightai_token', res.data.token);
+      }
       setUser(res.data.user);
     }
     return res.data;
@@ -48,6 +65,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
+      localStorage.removeItem('insightai_token');
       setUser(null);
       window.location.href = '/login';
     }

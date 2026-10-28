@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const env = require('./config/env');
 const passport = require('./config/passport');
 const errorHandler = require('./middleware/errorHandler');
+const { verifyAuthToken } = require('./utils/token');
+const { findUserById } = require('./services/dataStorage');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -15,6 +17,9 @@ const analysisRoutes = require('./routes/analysisRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 
 const app = express();
+
+// Trust reverse proxy (Essential for Render / Vercel HTTPS cookies)
+app.set('trust proxy', 1);
 
 // Security Headers
 app.use(
@@ -60,6 +65,7 @@ const sessionOptions = {
   secret: env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
+  proxy: true,
   cookie: {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     httpOnly: true,
@@ -68,18 +74,18 @@ const sessionOptions = {
   },
 };
 
-// Use MongoStore only when MongoDB connection is active, with error listener to prevent uncaught error crashes
-if (mongoose.connection && mongoose.connection.readyState === 1) {
+// Use MongoStore whenever MongoDB URI is configured
+if (env.MONGODB_URI) {
   try {
     const store = MongoStore.create({
-      client: mongoose.connection.getClient(),
+      mongoUrl: env.MONGODB_URI,
       collectionName: 'sessions',
       ttl: 7 * 24 * 60 * 60,
     });
     store.on('error', (err) => console.warn('[Session Warning]', err.message));
     sessionOptions.store = store;
   } catch (storeErr) {
-    // Falls back to Express MemoryStore automatically
+    console.warn('[Session Warning] Using memory store:', storeErr.message);
   }
 }
 
@@ -88,6 +94,25 @@ app.use(session(sessionOptions));
 // Initialize Passport & Session
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Bearer Token Cross-Domain Fallback Middleware
+app.use(async (req, res, next) => {
+  if (!req.user && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    const token = req.headers.authorization.split(' ')[1];
+    const userId = verifyAuthToken(token);
+    if (userId) {
+      try {
+        const user = await findUserById(userId);
+        if (user) {
+          req.user = user;
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+  next();
+});
 
 // Health Check API
 app.get('/api/health', (req, res) => {
