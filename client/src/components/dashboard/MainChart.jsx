@@ -214,6 +214,31 @@ const MainChart = ({ dataset }) => {
     return [formatted, `${aggregation.toUpperCase()} ${metricLabel}`];
   };
 
+  // Dynamic title and subtitle based on whether it is sales, HR, or other datasets
+  const currentDimensionCol = columns.find((c) => c.key === selectedDimension);
+  const dimensionLabel = selectedDimension.startsWith('__date')
+    ? (selectedDimension === '__date_month__' ? 'Month' : 'Date')
+    : (currentDimensionCol?.name || 'Category');
+
+  let chartTitle = '';
+  let chartSubtitle = '';
+
+  if (hasValidDate && selectedDimension.startsWith('__date')) {
+    if (isSales) {
+      chartTitle = 'Sales & Revenue Trend Analysis';
+      chartSubtitle = 'Chronological time-series trend of sales performance over time';
+    } else {
+      chartTitle = `${metricLabel} Trend Over Time`;
+      chartSubtitle = `Chronological time-series trend across ${selectedDimension === '__date_month__' ? 'months' : 'dates'}`;
+    }
+  } else {
+    chartTitle = `${metricLabel} by ${dimensionLabel}`;
+    chartSubtitle = `Distribution breakdown ranked by ${aggregation.toUpperCase()} ${metricLabel}`;
+  }
+
+  // Adjust XAxis tick interval to avoid label collision when many items exist
+  const axisInterval = chartData.length > 20 ? 'preserveStartEnd' : (chartData.length > 12 ? 1 : 0);
+
   return (
     <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4">
       {/* Header and Controls */}
@@ -221,18 +246,14 @@ const MainChart = ({ dataset }) => {
         <div>
           <div className="flex items-center space-x-2">
             <h2 className="text-base font-bold text-slate-800">
-              {hasValidDate && selectedDimension.startsWith('__date')
-                ? 'Sales & Activity Trend Analysis'
-                : 'Performance & Segment Breakdown'}
+              {chartTitle}
             </h2>
             <span className="text-[11px] font-semibold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full border border-brand-200">
               {aggregation.toUpperCase()}: {metricLabel}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            {hasValidDate && selectedDimension.startsWith('__date')
-              ? 'Chronological time-series aggregation across months and transaction periods'
-              : 'Categorical distribution ranked by total transaction volume'}
+            {chartSubtitle}
           </p>
         </div>
 
@@ -394,7 +415,7 @@ const MainChart = ({ dataset }) => {
             {chartType === 'line' && (
               <LineChart data={chartData} margin={{ top: 10, right: 25, left: 10, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} interval={0} angle={-25} textAnchor="end" />
+                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} interval={axisInterval} angle={-25} textAnchor="end" height={45} />
                 <YAxis
                   stroke="#94a3b8"
                   fontSize={11}
@@ -426,7 +447,7 @@ const MainChart = ({ dataset }) => {
             {chartType === 'bar' && (
               <BarChart data={chartData} margin={{ top: 10, right: 25, left: 10, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} interval={0} angle={-25} textAnchor="end" />
+                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} interval={axisInterval} angle={-25} textAnchor="end" height={45} />
                 <YAxis
                   stroke="#94a3b8"
                   fontSize={11}
@@ -456,7 +477,7 @@ const MainChart = ({ dataset }) => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} interval={0} angle={-25} textAnchor="end" />
+                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} interval={axisInterval} angle={-25} textAnchor="end" height={45} />
                 <YAxis
                   stroke="#94a3b8"
                   fontSize={11}
