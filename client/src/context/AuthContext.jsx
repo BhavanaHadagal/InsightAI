@@ -20,6 +20,15 @@ export const AuthProvider = ({ children }) => {
         window.history.replaceState({}, document.title, newUrl);
       }
 
+      const storedToken = localStorage.getItem('insightai_token');
+      // If there's no stored token and no OAuth token in URL, on new devices user is not logged in.
+      // Avoid blocking on sleeping backend cold-start.
+      if (!storedToken && !urlToken) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
       const res = await api.get('/auth/me');
       if (res.data.success && res.data.user) {
         setUser(res.data.user);
